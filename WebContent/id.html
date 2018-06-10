@@ -1,0 +1,151 @@
+
+<table id="list1"></table>
+<div id="pager1"></div>
+
+
+<style>
+
+.cellDiv 
+{
+    left: 0px; top:5px; height:22px;
+    position:relative;padding:0;margin-right:-4px;border:0;
+}
+.cellTextRight
+{
+    position:relative;
+    margin-right:4px;
+    text-align:right;
+    float:right;
+}
+.gradient1{
+    /* fallback (Opera) */
+    background: #008AEF;
+    /* Mozilla: https://developer.mozilla.org/en/CSS/-moz-linear-gradient */
+    background: -moz-linear-gradient(left, #008AEF, white);
+    /* Chrome, Safari: http://webkit.org/blog/175/introducing-css-gradients/ */
+    background: -webkit-gradient(linear, left top, right top, from(#008AEF), to(white));
+    /* MSIE http://msdn.microsoft.com/en-us/library/ms532997(VS.85).aspx */
+    filter: progid:DXImageTransform.Microsoft.Gradient(StartColorStr='#008AEF', EndColorStr='white', GradientType=1);
+    /*ie8*/
+    -ms-filter: "progid:DXImageTransform.Microsoft.Gradient(StartColorStr='#008AEF', EndColorStr='white', GradientType=1)";
+    position: absolute; left: -2px; top:-5px; right: 2px; height:22px; float:left;
+}
+.gradient2{
+    background: #63C384;
+    background: -moz-linear-gradient(left, #63C384 0%, white 100%);
+    background: -webkit-gradient(linear, left top, right top, from(#63C384), to(white));
+    filter: progid:DXImageTransform.Microsoft.Gradient(StartColorStr='#63C384', EndColorStr='white', GradientType=1);
+    -ms-filter: "progid:DXImageTransform.Microsoft.Gradient(StartColorStr='#63C384', EndColorStr='white', GradientType=1)";
+    position: absolute; left: -2px; top:-5px; right: 2px; height:22px; float:left;
+}
+
+</style>
+<br/>
+<br/>
+
+	<table id="tableLoadList"></table>
+        <div id="pager2"></div>
+<script type="text/javascript"> 
+
+
+    var gradientNumberFormat = function(cellvalue) {
+        var data = cellvalue.split("|"); /* parseInt(cellvalue, 10);*/
+        
+        //if (parseInt(data[0]) == 0) {return '<div class="progress"> Pending </div>'};
+        //if (parseInt(data[0]) == 100) {return '<div class="progress"><div class="progress-bar progress-bar-success" role="progressbar" style="width:100%" > Completed </div></div>'};
+        if (parseInt(data[0]) == 100) {return '<div class="cellDiv"><div class="gradient2" style="width:'+succ+'%;"></div><div class="cellTextRight" >100 % </div></div>';}
+        var TotalJobs = parseInt(data[0]) + parseInt(data[1]) + parseInt(data[2]) + parseInt(data[3]);
+        var succ = Math.round((parseInt(data[0]) / TotalJobs) * 100);
+        var Fail = Math.round((parseInt(data[1]) / TotalJobs) * 100);
+        var runn = Math.round((parseInt(data[2]) / TotalJobs) * 100);
+        var pend = Math.round((parseInt(data[3]) / TotalJobs) * 100);
+        return '<div class="cellDiv"><div class="gradient2" style="width:'+succ+'%;"></div><div class="cellTextRight" >'+succ +'% </div></div>';
+      	//return '<div class="progress"><div class="progress-bar progress-bar-success" role="progressbar" style="width:' + succ + '%">' + succ +'%'+ '</div><div class="progress-bar progress-bar-danger" role="progressbar" style="width:' + Fail + '%">' + Fail +'%'+ '</div><div class="progress-bar progress-bar-warning" role="progressbar" style="width:' + runn + '%">' + runn +'%'+ '</div></div>';
+        //return '<div class="progress"><div class="progress-bar progress-bar-success" role="progressbar" style="width:'+succ +'">'succ+'</div></div>';
+        
+    };
+	
+jQuery().ready(function (){
+
+
+ $("#list1").jqGrid({
+            	url:"getdata?table=batchmon1",
+                datatype: "json",
+                mtype: 'POST',
+                colNames: ['Region', 'Batch_date', 'Country', 'Cycle_no', 'Batch type', 'BizDate','Progress'],
+                colModel: [{name : 'REGION',index : 'Region',width : 100,align: 'center'}, 
+                           {name : 'BATCH_DATE',index : 'BATCH_DATE',width : 100,editable : false,align: 'center',sortable: true,sorttype: 'text'}, 
+                           {name : 'COUNTRY',index : 'COUNTRY',width : 100,editable : false,sortable: true,align: 'center',sorttype: 'text'}, 
+                           {name : 'CYCLE_NO',index : 'CYCLE_NO',width : 100,editable : false,sortable: true,align: 'center',sorttype: 'text'}, 
+                           {name : 'BATCH_TYPE',index : 'Batch_type',width : 100,editable : false,sortable: true,align: 'center',sorttype: 'text'}, 
+                           {name : 'BIZDATE',index : 'BizDate',width : 100,editable : false,sortable: true,align: 'center',sorttype: 'text'},
+                           {name : 'PROGRESS',index : 'PROGRESS',width : 100,editable : false,sortable: true,align: 'center',sorttype: 'text'
+                        	   ,formatter: function (cellvalue) {return gradientNumberFormat(cellvalue);}
+							   }],
+                pager: jQuery('#pager1'),
+                loadonce: true,
+                rowNum: 10,
+                height: '255',
+                rowList: [10,20,30],
+                sortname: 'Batch_date',
+                sortorder: 'desc',
+                viewrecords: true,
+                gridview: true,
+                sortable: true,
+                multiselect: false,
+                multiboxonly: false,
+                caption: 'DWH/BI Batch Status',
+                jsonReader: {repeatitems: false},           
+                onSelectRow: function(ids) {
+            		if(ids == null) {
+            			ids=0;
+            			if(jQuery("#tableLoadList").jqGrid('getGridParam','records') >0 )
+            			{
+            			
+            				jQuery("#tableLoadList").jqGrid('setGridParam',{datastr:dummy,page:1});
+            				jQuery("#tableLoadList").jqGrid('setCaption',"Invoice Detail: "+ids)
+            				.trigger('reloadGrid');
+            			}
+            		} else {
+            			var selRowArr = $("#list1").jqGrid ('getGridParam', 'selrow');
+            			jQuery("#tableLoadList").jqGrid('setGridParam',{url:"getdata?table=batchmon1&where=where bizdate='"+$('#list1').jqGrid('getCell', selRowArr[0], 'BIZDATE')+"'"+"And country='"+$('#list1').jqGrid('getCell', selRowArr[0], 'COUNTRY')+"'",page:1,datatype: "json"});
+            			jQuery("#tableLoadList").jqGrid('setCaption',"Table Loading Details of Record: "+ids)
+            			.trigger('reloadGrid');	
+					}}
+  });
+
+			jQuery("#list1").jqGrid('navGrid','#pager1',{refresh: true,edit: false,add: false,del: false,search: true});
+			
+			
+			
+			
+			
+			$("#tableLoadList").jqGrid({
+                datatype: "json",
+                colNames: ['COUNTRY','PROTFOLIO', 'SUBJECT_AREA', 'APPLICATION', 'BIZDATE', 'TABLE_NAME', 'LOAD_COUNT','UPDATE_TS'],
+                colModel: [{name : 'COUNTRY',index : 'COUNTRY',width : 100,align: 'center'}, 
+                           {name : 'PROTFOLIO',index : 'PROTFOLIO',width : 100,editable : false,align: 'center',sortable: true,sorttype: 'text'}, 
+                           {name : 'SUBJECT_AREA',index : 'SUBJECT_AREA',width : 100,editable : false,sortable: true,align: 'center',sorttype: 'text'}, 
+                           {name : 'APPLICATION',index : 'APPLICATION',width : 100,editable : false,sortable: true,align: 'center',sorttype: 'text'}, 
+                           {name : 'BIZDATE',index : 'BIZDATE',width : 100,editable : false,sortable: true,align: 'center',sorttype: 'text'}, 
+                           {name : 'TABLE_NAME',index : 'TABLE_NAME',width : 200,editable : false,sortable: true,align: 'center',sorttype: 'text'},
+                           {name : 'LOAD_COUNT',index : 'LOAD_COUNT',width : 100,editable : false,sortable: true,align: 'center',sorttype: 'text'},
+                           {name : 'UPDATE_TS',index : 'UPDATE_TS',width : 200,editable : false,sortable: true,align: 'center',sorttype: 'text'}],
+                pager: jQuery('#pager2'),
+                loadonce:true,
+                rowNum: 10,
+                height: '255',
+                rowList: [10,20,30],
+                sortname: 'Batch_date',
+                sortorder: 'desc',
+                viewrecords: true,
+                gridview: true,
+                sortable: true,
+                multiselect: false,
+                multiboxonly: false});
+			jQuery("#tableLoadList").jqGrid('navGrid','#pager2',{refresh: true,edit: false,add: false,del: false,search: true});
+
+		
+        });
+
+</script>
