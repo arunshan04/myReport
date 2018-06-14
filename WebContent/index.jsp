@@ -8,6 +8,7 @@
 <link rel="stylesheet" type="text/css" media="screen" href="themes/redmond/jquery-ui-custom.css" />
 <link rel="stylesheet" type="text/css" media="screen" href="themes/ui.jqgrid.css" />
 <link rel="stylesheet" type="text/css" media="screen" href="themes/ui.multiselect.css" />
+<link rel="stylesheet" type="text/css" media="screen" href="css/test.css" />
 <style>
 html, body {
 	margin: 0;			/* Remove body margin/padding */

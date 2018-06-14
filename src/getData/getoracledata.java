@@ -1,6 +1,7 @@
 package getData;
 
 import java.sql.Connection;
+import getData.*;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -24,7 +25,7 @@ public class getoracledata {
     JSONArray t;
     
     
-    public JSONObject getData(String table,String where1) throws JSONException {
+    public JSONArray getData(String table,String where1) throws JSONException {
   	  	JSONObject jsonObj = new JSONObject();
         int page = 10; //Integer.valueOf(req.getParameter("page")).intValue();
     	int pageSize =10; // Integer.valueOf(req.getParameter("rows")).intValue();
@@ -44,54 +45,29 @@ public class getoracledata {
             Class.forName("oracle.jdbc.OracleDriver");
  
             // METHOD #1
-            String dbURL="jdbc:oracle:thin:@(DESCRIPTION =(ADDRESS_LIST =(ADDRESS =(PROTOCOL=TCP)(HOST=localhost)(PORT=49161)))(CONNECT_DATA=(SID=xe)(SERVER=DEDICATED)))";
             String username="system";
             String password="oracle";
+            String dbURL="jdbc:oracle:thin:@(DESCRIPTION =(ADDRESS_LIST =(ADDRESS =(PROTOCOL=TCP)(HOST=localhost)(PORT=49161)))(CONNECT_DATA=(SID=xe)(SERVER=DEDICATED)))";
 
             Connection conn = DriverManager.getConnection(dbURL,username,password);
             
             ps=conn.prepareStatement("select * from "+tableName+" "+where);
-            rs=ps.executeQuery();
-            ResultSetMetaData rsmd = rs.getMetaData();
-      	  	int columnsNumber = rsmd.getColumnCount();
-      	  	
-      	  	JSONArray jsonArray = new JSONArray();
-      	  while (rs.next()) {
-      		JSONObject obj = new JSONObject();
-              for (int i = 0; i < columnsNumber; i++) {
-                  String columnName = rs.getMetaData().getColumnLabel(i + 1);
-                  Object columnValue = rs.getObject(i + 1);
-                  // if value in DB is null, then we set it to default value
-                  if (columnValue == null){
-                      columnValue = "null";
-                  }
-                  /*
-                  Next if block is a hack. In case when in db we have values like price and price1 there's a bug in jdbc - 
-                  both this names are getting stored as price in ResulSet. Therefore when we store second column value,
-                  we overwrite original value of price. To avoid that, i simply add 1 to be consistent with DB.
-                   */
-                  if (obj.has(columnName)){
-                      columnName += "1";
-                  }
-                  obj.put(columnName, columnValue);
-                  //System.out.println(columnName+"    :"+columnValue);
-              }
-              jsonArray.put(obj);
-      	  }
-      	total = jsonArray.length();
-      	String Pageheader="page\":1"+",\"total\":\""+String.valueOf(Math.ceil((double) total / pageSize))+"\",\"records\":\""+String.valueOf(total)+"\",\"rows";
-      	jsonObj.put(Pageheader, jsonArray);
-        return jsonObj;
-      	
-
-      	  	
-      	  
+            ResultSetAdapter test= new ResultSetAdapter(ps.executeQuery());
+            JSONArray jsonArray = new JSONArray();
+            while(test.iterator().hasNext()) {
+            	jsonArray.put(test.iterator().next());
+            }
+            return  (jsonArray);
+            
     	} catch (ClassNotFoundException ex) {ex.printStackTrace();
         } catch (SQLException ex) {ex.printStackTrace();
         } finally {}
 		return null;
     	
     }
+
+
+
     
   
     

@@ -103,13 +103,13 @@ jQuery().ready(function (){
             			{
             			
             				jQuery("#tableLoadList").jqGrid('setGridParam',{datastr:dummy,page:1});
-            				jQuery("#tableLoadList").jqGrid('setCaption',"Invoice Detail: "+ids)
+            				jQuery("#tableLoadList").jqGrid('setCaption',"Table Loading Status: "+ids)
             				.trigger('reloadGrid');
             			}
             		} else {
             			var selRowArr = $("#list1").jqGrid ('getGridParam', 'selrow');
             			jQuery("#tableLoadList").jqGrid('setGridParam',{url:"getdata?table=batchmon1&where=where bizdate='"+$('#list1').jqGrid('getCell', selRowArr[0], 'BIZDATE')+"'"+"And country='"+$('#list1').jqGrid('getCell', selRowArr[0], 'COUNTRY')+"'",page:1,datatype: "json"});
-            			jQuery("#tableLoadList").jqGrid('setCaption',"Table Loading Details of Record: "+ids)
+            			jQuery("#tableLoadList").jqGrid('setCaption',"Table Loading Status of Country: "+$('#list1').jqGrid('getCell', selRowArr[0], 'COUNTRY'))
             			.trigger('reloadGrid');	
 					}}
   });
@@ -140,6 +140,7 @@ jQuery().ready(function (){
                 sortorder: 'desc',
                 viewrecords: true,
                 gridview: true,
+                caption: 'Table Loading Status',
                 sortable: true,
                 multiselect: false,
                 multiboxonly: false});
