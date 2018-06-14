@@ -12,7 +12,7 @@ public class HelloWorld {
 	public static void main(String[] args) throws JSONException {
 	      // Prints "Hello, World" in the terminal window.
 			String table = "test123";
-			org.json.JSONArray test=new  getoracledata().getData("sys.dummy", "");
+			org.json.JSONArray test=new  getoracledata().getData("all_tables", "");
 			System.out.println("Output: "+test);
 	   }
 	}
