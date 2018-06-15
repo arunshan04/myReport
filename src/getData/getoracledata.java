@@ -7,6 +7,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
+import java.util.Iterator;
+import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -53,9 +55,10 @@ public class getoracledata {
             
             ps=conn.prepareStatement("select * from "+tableName+" "+where);
             ResultSetAdapter test= new ResultSetAdapter(ps.executeQuery());
+            Iterator<Map<String, Object>> t1 = test.iterator();
             JSONArray jsonArray = new JSONArray();
-            while(test.iterator().hasNext()) {
-            	jsonArray.put(test.iterator().next());
+            while(t1.hasNext()) {
+            	jsonArray.put(t1.next());
             }
             return  (jsonArray);
             
