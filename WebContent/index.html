@@ -1,0 +1,549 @@
+    <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+    <html>
+
+    <head>
+        <!-- The jQuery library is a prerequisite for all jqSuite products -->
+        <script type="text/ecmascript" src="js/jquery.min.js"></script>
+        <!-- This is the Javascript file of jqGrid -->
+        <script type="text/ecmascript" src="js/trirand/jquery.jqGrid.min.js"></script>
+        <!-- This is the localization file of the grid controlling messages, labels, etc.
+    <!-- We support more than 40 localizations -->
+        <script type="text/ecmascript" src="js/trirand/i18n/grid.locale-en.js"></script>
+        <!-- A link to a jQuery UI ThemeRoller theme, more than 22 built-in and many more custom -->
+        <link rel="stylesheet" type="text/css" media="screen" href="css/jquery-ui.css" />
+        <!-- The link to the CSS that the grid needs -->
+        <link rel="stylesheet" type="text/css" media="screen" href="css/trirand/ui.jqgrid.css" />
+        <script src="https://cdn.jsdelivr.net/npm/alasql@0.4"></script>
+        
+        <meta charset="utf-8" />
+        <title>MY Dashboard</title>
+        <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+    </head>
+    
+            <style>
+            .cellDiv {
+                left: 0px;
+                top: 5px;
+                height: 22px;
+                position: relative;
+                padding: 0;
+                margin-right: -4px;
+                border: 0;
+            }
+
+            .cellTextRight {
+                position: relative;
+                margin-right: 4px;
+                text-align: right;
+                float: right;
+            }
+
+            .gradient1 {
+                /* fallback (Opera) */
+                background: #008AEF;
+                /* Mozilla: https://developer.mozilla.org/en/CSS/-moz-linear-gradient */
+                background: -moz-linear-gradient(left, #008AEF, white);
+                /* Chrome, Safari: http://webkit.org/blog/175/introducing-css-gradients/ */
+                background: -webkit-gradient(linear, left top, right top, from(#008AEF), to(white));
+                /* MSIE http://msdn.microsoft.com/en-us/library/ms532997(VS.85).aspx */
+                filter: progid:DXImageTransform.Microsoft.Gradient(StartColorStr='#008AEF', EndColorStr='white', GradientType=1);
+                /*ie8*/
+                -ms-filter: "progid:DXImageTransform.Microsoft.Gradient(StartColorStr='#008AEF', EndColorStr='white', GradientType=1)";
+                position: absolute;
+                left: -2px;
+                top: -5px;
+                right: 2px;
+                height: 22px;
+                float: left;
+            }
+
+            .gradient2 {
+                background: #63C384;
+                background: -moz-linear-gradient(left, #63C384 0%, white 100%);
+                background: -webkit-gradient(linear, left top, right top, from(#63C384), to(white));
+                filter: progid:DXImageTransform.Microsoft.Gradient(StartColorStr='#63C384', EndColorStr='white', GradientType=1);
+                -ms-filter: "progid:DXImageTransform.Microsoft.Gradient(StartColorStr='#63C384', EndColorStr='white', GradientType=1)";
+                position: absolute;
+                left: -2px;
+                top: -5px;
+                right: 2px;
+                height: 22px;
+                float: left;
+            }
+            
+            
+
+
+        </style>
+    
+
+    <body>
+
+
+
+<table id="list1"></table>=<div id="pager1"></div>
+
+
+
+<div style="border: 0px solid #ccc">
+  <table class="columns" align="right">
+      <tr>
+        <table id="tableLoadList" align="center"></table><div id="pager2"></div><button id="export">Export to Excel</button>
+      </tr>
+    </table>
+</div>
+
+
+<div style="border: 0px solid #ccc">
+  <table class="columns" align="center">
+      <tr>
+        <td><div id="piechartDri" style="border: 5px solid #ccc"></div></td>
+        <td><div id="piechartOrp" style="border: 5px solid #ccc"></div></td>
+        <td><div id="piechartBank" style="border: 5px solid #ccc"></div></td>
+        <td><div id="piechartCards" style="border: 5px solid #ccc"></div></td>
+      </tr>
+    </table>
+</div>
+
+        <br/>
+        <br/>
+
+
+<div style="border: 0px solid #ccc">
+		<div style="width: 50%; float: left"><table id="dri" float:left;width:50%;></table><div id="dripager"></div></div>
+        <div style="width: 50%; float: right"><table id="orp" width:50%;float:right;></table><div id="orppager"></div></div>
+</div>       
+<h1>""</h1>
+
+        <br/>
+        <br/> 
+       
+<div style="border: 0px solid #ccc">
+		<div style="width: 50%; float: left"><table id="bank" float:left;width:50%;></table><div id="bankpager"></div></div>
+        <div style="width: 50%; float: right"><table id="cards" width:50%;float:right;></table><div id="cardspager"></div></div>
+</div>  
+         
+                 <br/>
+        <br/> 
+<h1>""</h1>
+        
+
+
+
+
+
+
+
+        <script type="text/javascript">
+            var country_code = function(countryname) {
+                switch (countryname) {
+                    case 'AU':return '036';
+                    case 'CN':return '156';
+                    case 'HK':return '344';
+                    case 'MA':return '446';
+                    case 'MY':return '458';
+                    case 'PH':return '680';
+                    case 'SG':return '702';
+                    case 'TH':return '764';
+                    case 'VN':return '704';
+                    default:return '000';
+                }
+            }
+            var batch_type = function(batchtype) {
+                if (batchtype.includes("M")) {
+                    return 'M';
+                } else {
+                    return 'D';
+                }
+            }
+
+            var options = {
+                includeLabels: true,
+                includeGroupHeader: true,
+                includeFooter: true,
+                fileName: "jqGridExport.xlsx",
+                mimetype: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                maxlength: 40,
+                onBeforeExport: null,
+
+                replaceStr: null
+            }
+
+            var gradientNumberFormat = function(cellvalue) {
+                var cvalue = cellvalue.split("|"); /* parseInt(cellvalue, 10);*/
+
+                //if (parseInt(data[0]) == 0) {return '<div class="progress"> Pending </div>'};
+                //if (parseInt(data[0]) == 100) {return '<div class="progress"><div class="progress-bar progress-bar-success" role="progressbar" style="width:100%" > Completed </div></div>'};
+                if (parseInt(cvalue[0]) == 100) {
+                    return '<div class="cellDiv"><div class="gradient2" style="width:' + succ + '%;"></div><div class="cellTextRight" >100 % </div></div>';
+                }
+                var TotalJobs = parseInt(cvalue[0]) + parseInt(cvalue[1]) + parseInt(cvalue[2]) + parseInt(cvalue[3]);
+                var succ = Math.round((parseInt(cvalue[0]) / TotalJobs) * 100);
+                var Fail = Math.round((parseInt(cvalue[1]) / TotalJobs) * 100);
+                var runn = Math.round((parseInt(cvalue[2]) / TotalJobs) * 100);
+                var pend = Math.round((parseInt(cvalue[3]) / TotalJobs) * 100);
+                return '<div class="cellDiv"><div class="gradient2" style="width:' + succ + '%;"></div><div class="cellTextRight" >' + succ + '% </div></div>';
+                //return '<div class="progress"><div class="progress-bar progress-bar-success" role="progressbar" style="width:' + succ + '%">' + succ +'%'+ '</div><div class="progress-bar progress-bar-danger" role="progressbar" style="width:' + Fail + '%">' + Fail +'%'+ '</div><div class="progress-bar progress-bar-warning" role="progressbar" style="width:' + runn + '%">' + runn +'%'+ '</div></div>';
+                //return '<div class="progress"><div class="progress-bar progress-bar-success" role="progressbar" style="width:'+succ +'">'succ+'</div></div>';
+
+            };
+
+            jQuery().ready(function() {
+
+
+                $("#list1").jqGrid({
+                    url: "getdata?table=batchmon1",
+                    datatype: "json",
+                    mtype: 'POST',
+                    colNames: ['Region', 'Batch_date', 'Country', 'Cycle_no', 'Batch type', 'BizDate', 'Progress'],
+                    colModel: [{name: 'REGION',index: 'Region',width: 100,align: 'center'},
+                    	{name: 'BATCH_DATE',index: 'BATCH_DATE',width: 100,editable: false,align: 'center',sortable: true,sorttype: 'text'},
+                    	{name: 'COUNTRY',index: 'COUNTRY',width: 100,editable: false,sortable: true,align: 'center',sorttype: 'text'},
+                    	{name: 'CYCLE_NO',index: 'CYCLE_NO',width: 100,editable: false,sortable: true,align: 'center',sorttype: 'text'},
+                    	{name: 'BATCH_TYPE',index: 'Batch_type',width: 100,editable: false,sortable: true,align: 'center',sorttype: 'text'},
+                    	{name: 'BIZDATE',index: 'BizDate',width: 100,editable: false,sortable: true,align: 'center',sorttype: 'text'},
+                    	{name: 'PROGRESS',index: 'PROGRESS',width: 100,editable: false,sortable: true,align: 'center',sorttype: 'text',formatter: function(cellvalue) 
+                    	{    return gradientNumberFormat(cellvalue);}}
+                    ],
+                    pager: jQuery('#pager1'),
+                    loadonce: true,
+                    rowNum: 10,
+                    height: '255',
+                    rowList: [10, 20, 30],
+                    sortname: 'Batch_date',
+                    sortorder: 'desc',
+                    viewrecords: true,
+                    rownumbers: true, // show row numbers
+                    rownumWidth: 25, // the width of the row numbers columns
+                    gridview: true,
+                    sortable: true,
+                    multiselect: false,
+                    multiboxonly: false,
+                    caption: 'DWH/BI Batch Status',
+                    jsonReader: {
+                        repeatitems: false
+                    },
+                    onSelectRow: function(ids) {
+
+                        if (ids == null) {
+                            ids = 0;
+                            if (jQuery("#tableLoadList").jqGrid('getGridParam', 'records') > 0) {
+
+                                jQuery("#tableLoadList").jqGrid('setGridParam', {
+                                    datastr: dummy,
+                                    page: 1
+                                });
+                                jQuery("#tableLoadList").jqGrid('setCaption', "Invoice Detail: " + ids)
+                                    .trigger('reloadGrid');
+                            }
+                        } else {
+                            var selRowArr = $("#list1").jqGrid('getGridParam', 'selrow');
+                            jQuery("#tableLoadList").jqGrid("clearGridData");
+                            query = "select a.module,a.s_seg_cde,v_mis_dte_exp,b.v_pgm_cde,d_prcs_date,f_status,d_start_time,d_end_time from afw_applicability_master a left join (select * from pert_master_status where v_mis_dte_exp='"+$('#list1').jqGrid('getCell', selRowArr, 'BIZDATE')+"' and s_cntry_cde="+country_code($('#list1').jqGrid('getCell', selRowArr, 'COUNTRY'))+"   ) b  on a.s_cntry_cde=b.s_cntry_cde and a.s_seg_cde=b.s_seg_cde and a.v_pgm_cde=b.v_pgm_cde  and (a.s_applicability='B' or a.s_applicability='" + batch_type($('#list1').jqGrid('getCell', selRowArr, 'BATCH_TYPE')) + "') where a.s_cntry_cde="+country_code($('#list1').jqGrid('getCell', selRowArr, 'COUNTRY'))+" order by 1"
+                            jQuery("#tableLoadList").jqGrid('setGridParam', {
+                                url: "getdata?query=" + query,
+                                page: 1,
+                                datatype: "json"
+                            });
+                            jQuery("#tableLoadList").jqGrid('setCaption', "Table Loading Details of Record: " + ids)
+                                .trigger('reloadGrid');
+                        }
+                    }
+                });
+
+                jQuery("#list1").jqGrid('navGrid', '#pager1', {
+                    refresh: true,
+                    edit: false,
+                    add: false,
+                    del: false,
+                    search: true
+                });
+
+
+                $("#tableLoadList").jqGrid({
+                    datatype: "json",
+                    colNames: ['Module', 'Segment', 'BizDate', 'Program Code', 'ProcessedDate', 'Status', 'Start Time', 'End Time'],
+                    colModel: [{name: 'MODULE',index: 'MODULE',width: 100,align: 'center'},
+                        {name: 'S_SEG_CDE',index: 'S_SEG_CDE',width: 100,editable: false,align: 'center',sortable: true,sorttype: 'text'},
+                        {name: 'V_MIS_DTE_EXP',index: 'V_MIS_DTE_EXP',width: 100,editable: false,sortable: true,align: 'center',sorttype: 'text'},
+                        {name: 'V_PGM_CDE',index: 'V_PGM_CDE',width: 100,editable: false,sortable: true,align: 'center',sorttype: 'text'},
+                        {name: 'D_PRCS_DATE',index: 'D_PRCS_DATE',width: 100,editable: false,sortable: true,align: 'center',sorttype: 'text'},
+                        {name: 'F_STATUS',index: 'F_STATUS',width: 100,editable: false,sortable: true,align: 'center',sorttype: 'text'},
+                        {name: 'D_START_TIME',index: 'D_START_TIME',width: 200,editable: false,sortable: true,align: 'center',sorttype: 'text'},
+                        {name: 'D_END_TIME',index: 'D_END_TIME',width: 100,editable: false,sortable: true,align: 'center',sorttype: 'text'}],
+                    pager: jQuery('#pager2'),
+                    loadonce: true,
+                    rowNum: 10,
+                    height: '255',
+                    rowList: [10, 20, 30],
+                    sortname: 'Batch_date',
+                    sortorder: 'desc',
+                    rownumbers: true, // show row numbers
+                    rownumWidth: 25, // the width of the row numbers columns
+                    viewrecords: true,
+                    gridview: true,
+                    sortable: true,
+                    loadComplete : function (){summarizeData()},
+                    multiselect: false,
+                    multiboxonly: false
+                }).jqGrid('navGrid', '#pager2', {refresh: true,edit: false,add: false,del: false,search: true});
+                
+                $("#export").on("click", function() {
+                    $("#tableLoadList").jqGrid("exportToExcel", {
+                        includeLabels: true,
+                        includeGroupHeader: true,
+                        includeFooter: true,
+                        fileName: "Table_Load_History.xlsx",
+                        maxlength: 40 // maxlength for visible string data 
+                    })
+                });
+
+                
+                
+                
+ 
+                
+                
+
+
+
+
+            });
+            
+         
+            var summarizeData=function(){
+            	var allRowsInGrid = $('#tableLoadList').getGridParam('data');
+            	//data=JSON.stringify(allRowsInGrid);
+            	gridData=allRowsInGrid;
+            	prev_m="";prev_b="";
+            	prev_start="";prev_end="";
+            	success=0;failiure=0;pending=0;
+            	DRI= [];BANK=[];CARDS=[];D=[];OTHERS=[];ORP=[];
+            	DRI_P=[];dri_total=0;dri_failiure=0;dri_success=0;dri_pending=0;
+            		if(gridData)
+            		{
+            			for (var i=0;i<gridData.length;i++){
+            				var module=gridData[i]['MODULE'];
+            				var status=gridData[i]['F_STATUS'];
+            				var module=module.split("_");
+            				var start=gridData[i]['D_START_TIME'];
+            				var end=gridData[i]['D_START_TIME'];
+            				
+
+        					
+            				if ((((module[1]!=[prev_m]  ) && (prev_m != "")) || ( (module[0]!=prev_b) && (prev_b !="")))){
+            					switch (prev_b){
+            					case 'DRI':
+            						DRI.push({ "MODULE": prev_m, "Success": success,"Failiure":failiure,"Pending":pending,"Start":start,"End":end});
+            						break;
+            					case 'D':D.push({ "MODULE": prev_m, "Success": success,"Failiure":failiure,"Pending":pending,"Start":start,"End":end});break;
+            					case 'CARDS':CARDS.push({ "MODULE": prev_m, "Success": success,"Failiure":failiure,"Pending":pending,"Start":start,"End":end});break;
+            					case 'BANK':BANK.push({ "MODULE": prev_m, "Success": success,"Failiure":failiure,"Pending":pending,"Start":start,"End":end});break;
+            					case 'ORP':ORP.push({ "MODULE": prev_m, "Success": success,"Failiure":failiure,"Pending":pending,"Start":start,"End":end});break;
+            					default:OTHERS.push({ "MODULE": prev_m, "Success": success,"Failiure":failiure,"Pending":pending,"Start":start,"End":end});break;
+            					};
+            					
+            					success=0;failiure=0;pending=0;start="";end="";prev_start="";prev_end="";
+            				}
+            				
+            				switch (status){
+            					case 'S': success+=1;break;
+            					case 'F': failiure+=1;break;
+            					default: pending+=1;break;
+            				};
+            				
+            				if ((start < prev_start) || (prev_start=="")){
+            					prev_start=start;
+            				};
+            				
+            				if ((end < prev_end) || (prev_end=="")){
+            					prev_end=end;
+            				}
+            				
+
+
+            				prev_m=module[1];
+            				prev_b=module[0];
+            			}
+            			
+            			if (prev_b!=""){
+        					switch (prev_b){
+        					case 'DRI':DRI.push({ "MODULE": prev_m, "Success": success,"Failiure":failiure,"Pending":pending,"Start":start,"End":end});break;
+        					case 'D':D.push({ "MODULE": prev_m, "Success": success,"Failiure":failiure,"Pending":pending,"Start":start,"End":end});break;
+        					case 'CARDS':CARDS.push({ "MODULE": prev_m, "Success": success,"Failiure":failiure,"Pending":pending,"Start":start,"End":end});break;
+        					case 'BANK':BANK.push({ "MODULE": prev_m, "Success": success,"Failiure":failiure,"Pending":pending,"Start":start,"End":end});break;
+        					case 'ORP':ORP.push({ "MODULE": prev_m, "Success": success,"Failiure":failiure,"Pending":pending,"Start":start,"End":end});break;
+        					default:OTHERS.push({ "MODULE": prev_m, "Success": success,"Failiure":failiure,"Pending":pending,"Start":start,"End":end});break;
+        					};
+        				
+        				var dri_data = {"page": "1","total":Math.ceil(DRI.length/10),"records":DRI.length ,"rows": DRI};
+    				    var orp_data = {"page": "1","total":Math.ceil(ORP.length/10),"records":DRI.length ,"rows": ORP};
+    				    var bank_data = {"page": "1","total":Math.ceil(BANK.length/10),"records":BANK.length ,"rows": BANK};
+    				    var cards_data = {"page": "1","total":Math.ceil(CARDS.length/10),"records":CARDS.length ,"rows": CARDS};
+    				    
+    				    
+    				    var dri_percent = alasql('SELECT  sum(Success) AS Success, sum(Pending) as Pending,sum(Failiure) as Failiure FROM ?',[DRI]);
+    				    var orp_percent = alasql('SELECT  sum(Success) AS Success, sum(Pending) as Pending,sum(Failiure) as Failiure FROM ?',[ORP]);
+    				    var bank_percent = alasql('SELECT  sum(Success) AS Success, sum(Pending) as Pending,sum(Failiure) as Failiure FROM ?',[BANK]);
+    				    var cards_percent = alasql('SELECT  sum(Success) AS Success, sum(Pending) as Pending,sum(Failiure) as Failiure FROM ?',[CARDS]);
+    				    alert(JSON.stringify(ORP));
+    				    drawCharts(dri_percent[0]["Success"],dri_percent[0]["Failiure"],dri_percent[0]["Pending"],'DRI Summary Grid','piechartDri');
+    				    drawCharts(orp_percent[0]["Success"],orp_percent[0]["Failiure"],orp_percent[0]["Pending"],'ORP Summary Grid','piechartOrp');
+    				    drawCharts(bank_percent[0]["Success"],bank_percent[0]["Failiure"],bank_percent[0]["Pending"],'BANK Summary Grid','piechartBank');
+    				    drawCharts(cards_percent[0]["Success"],cards_percent[0]["Failiure"],cards_percent[0]["Pending"],'CARDS Summary Grid','piechartCards');
+    				    
+    					CreateJQGrid(dri_data,orp_data,bank_data,cards_data);
+
+
+            			}
+
+            			
+            		}
+            		
+            	};
+
+            
+            	function CreateJQGrid(dridata,orpdata,bankdata,cardsdata){
+            		
+                    $("#dri").jqGrid({
+                        datatype: "jsonstring",
+                        datastr:dridata,
+                        colNames: ['Module', 'Failiure', 'Pending', 'Success','Start Time','End Time','Status'],
+                        colModel: [{name: 'MODULE',index: 'MODULE',width: 100,align: 'center'},
+                            {name: 'Failiure',index: 'Failiure',width: 100,editable: false,align: 'center',sortable: true,sorttype: 'text'},
+                            {name: 'Pending',index: 'Pending',width: 100,editable: false,sortable: true,align: 'center',sorttype: 'text'},
+                            {name: 'Success',index: 'Success',width: 100,editable: false,sortable: true,align: 'center',sorttype: 'text'},
+                            {name: 'Start',index: 'Start',width: 100,editable: false,sortable: true,align: 'center',sorttype: 'text'},
+                            {name: 'End',index: 'End',width: 100,editable: false,sortable: true,align: 'center',sorttype: 'text'},
+                            {name: 'Success',index: 'Success',width: 100,editable: false,sortable: true,align: 'center',sorttype: 'text'}],
+                        pager: jQuery('#dripager'),
+                        rowNum: 10,
+                        height: '255',
+                        rowList: [10, 20, 30],
+                        sortname: 'MODULE',
+                        sortorder: 'desc',
+                        caption:'DRI Grid Summary',
+                        rownumbers: true, // show row numbers
+                        rownumWidth: 25, // the width of the row numbers columns
+                        multiselect: false,
+                        multiboxonly: false
+                    }).jqGrid('navGrid', '#dripager', {refresh: true,edit: false,add: false,del: false,search: true});
+                    
+                    
+                    $("#orp").jqGrid({
+                        datatype: "jsonstring",
+                        datastr:orpdata,
+                        colNames: ['Module', 'Failiure', 'Pending', 'Success','Start Time','End Time','Status'],
+                        colModel: [{name: 'MODULE',index: 'MODULE',width: 100,align: 'center'},
+                            {name: 'Failiure',index: 'Failiure',width: 100,editable: false,align: 'center',sortable: true,sorttype: 'text'},
+                            {name: 'Pending',index: 'Pending',width: 100,editable: false,sortable: true,align: 'center',sorttype: 'text'},
+                            {name: 'Success',index: 'Success',width: 100,editable: false,sortable: true,align: 'center',sorttype: 'text'},
+                            {name: 'Start',index: 'Start',width: 100,editable: false,sortable: true,align: 'center',sorttype: 'text'},
+                            {name: 'End',index: 'End',width: 100,editable: false,sortable: true,align: 'center',sorttype: 'text'},
+                            {name: 'Success',index: 'Success',width: 100,editable: false,sortable: true,align: 'center',sorttype: 'text'}],
+                        pager: jQuery('#orppager'),
+                        loadonce: true,
+                        rowNum: 10,
+                        height: '255',
+                        rowList: [10, 20, 30],
+                        sortname: 'MODULE',
+                        sortorder: 'desc',
+                        caption:'ORP Grid Summary',
+                        viewrecords: true,
+                        gridview: true,
+                        rownumbers: true, // show row numbers
+                        rownumWidth: 25, // the width of the row numbers columns
+                        sortable: true
+                    }).jqGrid('navGrid', '#orppager', {refresh: true,edit: false,add: false,del: false,search: true});
+                    
+                    
+                    $("#bank").jqGrid({
+                        datatype: "jsonstring",
+                        datastr:bankdata,
+                        colNames: ['Module', 'Failiure', 'Pending', 'Success','Start Time','End Time','Status'],
+                        colModel: [{name: 'MODULE',index: 'MODULE',width: 100,align: 'center'},
+                            {name: 'Failiure',index: 'Failiure',width: 100,editable: false,align: 'center',sortable: true,sorttype: 'text'},
+                            {name: 'Pending',index: 'Pending',width: 100,editable: false,sortable: true,align: 'center',sorttype: 'text'},
+                            {name: 'Success',index: 'Success',width: 100,editable: false,sortable: true,align: 'center',sorttype: 'text'},
+                            {name: 'Start',index: 'Start',width: 100,editable: false,sortable: true,align: 'center',sorttype: 'text'},
+                            {name: 'End',index: 'End',width: 100,editable: false,sortable: true,align: 'center',sorttype: 'text'},
+                            {name: 'Success',index: 'Success',width: 100,editable: false,sortable: true,align: 'center',sorttype: 'text'}],
+                        pager: jQuery('#bankpager'),
+                        loadonce: true,
+                        rowNum: 10,
+                        height: '255',
+                        rowList: [10, 20, 30],
+                        sortname: 'MODULE',
+                        sortorder: 'desc',
+                        caption:'Banks Grid Summary',
+                        viewrecords: true,
+                        gridview: true,
+                        rownumbers: true, // show row numbers
+                        rownumWidth: 25, // the width of the row numbers columns
+                        sortable: true
+                    }).jqGrid('navGrid', '#bankpager', {refresh: true,edit: false,add: false,del: false,search: true});
+                    
+                    
+                    $("#cards").jqGrid({
+                        datatype: "jsonstring",
+                        datastr:cardsdata,
+                        colNames: ['Module', 'Failiure', 'Pending', 'Success','Start Time','End Time','Status'],
+                        colModel: [{name: 'MODULE',index: 'MODULE',width: 100,align: 'center'},
+                            {name: 'Failiure',index: 'Failiure',width: 100,editable: false,align: 'center',sortable: true,sorttype: 'text'},
+                            {name: 'Pending',index: 'Pending',width: 100,editable: false,sortable: true,align: 'center',sorttype: 'text'},
+                            {name: 'Success',index: 'Success',width: 100,editable: false,sortable: true,align: 'center',sorttype: 'text'},
+                            {name: 'Start',index: 'Start',width: 100,editable: false,sortable: true,align: 'center',sorttype: 'text'},
+                            {name: 'End',index: 'End',width: 100,editable: false,sortable: true,align: 'center',sorttype: 'text'},
+                            {name: 'Success',index: 'Success',width: 100,editable: false,sortable: true,align: 'center',sorttype: 'text'}],
+                        pager: jQuery('#cardspager'),
+                        loadonce: true,
+                        rowNum: 10,
+                        height: '255',
+                        rowList: [10, 20, 30],
+                        sortname: 'MODULE',
+                        sortorder: 'desc',
+                        caption:'Cards Grid Summary',
+                        viewrecords: true,
+                        gridview: true,
+                        rownumbers: true, // show row numbers
+                        rownumWidth: 25, // the width of the row numbers columns
+                        sortable: true
+                    }).jqGrid('navGrid', '#cardspager', {refresh: true,edit: false,add: false,del: false,search: true});
+            		
+            	};
+            	
+            	function drawCharts(completed,failiure,pending,myTitle,elementId){
+            	      google.charts.load('current', {'packages':['corechart']});
+            	      google.charts.setOnLoadCallback(drawChart);
+
+            	      function drawChart() {
+
+            	        var data = google.visualization.arrayToDataTable([
+            	          ['Progress ', 'Completion %'],
+            	          ['Completed',     completed],
+            	          ['Failiure',      failiure],
+            	          ['Pending',  pending]
+            	        ]);
+
+            	        var options = {title: myTitle};
+            	        var chart = new google.visualization.PieChart(document.getElementById(elementId));
+            	        chart.draw(data, options);
+            	      }
+            	}
+            	
+            	
+
+
+
+        </script>
+
+
+
+
+  <head>
+    
+
+
+
+  </head>
+</html>
